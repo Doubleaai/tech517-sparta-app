@@ -3,10 +3,33 @@
 <head>
   <title>Provisioning Test Page</title>
   <link href="https://fonts.googleapis.com/css?family=Slabo+27px" rel="stylesheet">
-  <%- include('inject') %>
   <style type="text/css">
     body {
       text-align:center;
+      font-family: 'Slabo 27px', serif;
+      height:100vh;
+    }
+
+    .vertical-center {
+
+      position:relative;
+      top:50%;
+      transform: translateY(-50%);
+
+    }
+
+    img {
+      width:100px;
+    }
+
+    #command {
+      width:50%;
+      display: inline-block; 
+    }
+
+    #stdout {
+      width:50%;
+      display: inline-block; 
     }
   </style>
 </head>

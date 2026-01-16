@@ -3,20 +3,33 @@
 <head>
   <title>Provisioning Test Page</title>
   <link href="https://fonts.googleapis.com/css?family=Slabo+27px" rel="stylesheet">
-  <%- include('inject') %>
+  <style type="text/css">
+    body {
+      text-align:center;
+      font-family: 'Slabo 27px', serif;
+      height:100vh;
+    }
+
+    .vertical-center {
+
+      position:relative;
+      top:50%;
+      transform: translateY(-50%);
+
+    }
+
+    img {
+      width:100px;
+    }
+  </style>
 </head>
 <body>
-  <div class="blog">
-    <img src="/images/logo.png" />
-    <h1>Recent Posts</h1>
-    <hr/>
+  <div class="vertical-center">
+    <h1>Fibonacci Generator</h1>
 
-    <% posts.forEach(function(post){ %>
-    <div class="post">
-      <h3><%= post.title %></h3>
-      <p><%= post.body %></p>
-    </div>
-    <% }) %>
+
+    <p>The number at position <%= index %> is <%= value %></p>
+    <img src="/images/logo.png" />
   </div>
 </body>
 </html>

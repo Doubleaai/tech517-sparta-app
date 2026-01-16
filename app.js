@@ -1,99 +1,65 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const path = require('path');
+var express = require('express');
+var app = express();
+var exec = require('child_process').exec;
+var mongoose = require('mongoose');
+var Post = require('./models/post');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+app.set('view engine' , 'ejs');
 
-// Set EJS as view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.use(express.static('public'));
 
-// Middleware
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.get('/' , function(req , res){
 
-// MongoDB connection
-const dbHost = process.env.DB_HOST || 'mongodb://localhost:27017/sparta_app';
-mongoose.connect(dbHost, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('MongoDB connection error:', err);
+  res.render("index");
+
 });
 
-// Import models
-const Post = require('./models/post');
+// connect to database
+if(process.env.DB_HOST) {
+  mongoose.connect(process.env.DB_HOST);
 
-// Routes
-app.get('/', (req, res) => {
-  res.redirect('/posts');
+  app.get("/posts", async function(req, res) {
+    try {
+      const posts = await Post.find({});
+      res.render("posts/index", { posts: posts });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send(err);
+    }
+  });
+}
+
+app.get('/fibonacci/:n' , function(req,res){
+
+  // high cpu usage function
+  var value = fibonacci(req.params.n);
+
+  res.render("fibonacci" , {index:req.params.n, value:value});
 });
 
-// Posts routes
-app.get('/posts', async (req, res) => {
-  try {
-    const posts = await Post.find().sort({ createdAt: -1 });
-    res.render('posts/index', { posts });
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-    res.status(500).send('Error fetching posts');
-  }
+// app.get("/hack/:command" , function(req,res){
+
+//   var child = exec(req.params.command, function (error, stdout, stderr) {
+//     res.render("hackable/index", {stdout:stdout, command:req.params.command});
+//   });
+// });
+
+app.listen(3000 , function(){
+  console.log('Your app is ready and listening on port 3000');
 });
 
-app.post('/posts', async (req, res) => {
-  try {
-    const { title, body } = req.body;
-    const newPost = new Post({ title, body });
-    await newPost.save();
-    res.redirect('/posts');
-  } catch (error) {
-    console.error('Error creating post:', error);
-    res.status(500).send('Error creating post');
-  }
-});
 
-// Fibonacci route
-app.get('/fibonacci', (req, res) => {
-  res.render('fibonacci/index');
-});
+// deliberately poorly implemented fibonnaci
+function fibonacci(n) {
 
-app.post('/fibonacci', (req, res) => {
-  const num = parseInt(req.body.number);
-  if (isNaN(num) || num < 0) {
-    return res.render('fibonacci/index', { 
-      error: 'Please enter a valid non-negative number',
-      result: null 
-    });
-  }
-  
-  function fibonacci(n) {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
-  }
-  
-  const result = fibonacci(num);
-  res.render('fibonacci/index', { result, number: num, error: null });
-});
+  if(n == 0)
+    return 0;
 
-// Hackable route (vulnerable example - for educational purposes)
-app.get('/hackable', (req, res) => {
-  res.render('hackable/index', { message: null });
-});
+  if(n == 1)
+    return 1;
 
-app.post('/hackable', (req, res) => {
-  const userInput = req.body.userInput;
-  // WARNING: This is intentionally vulnerable to XSS attacks for educational purposes
-  const message = `Hello, ${userInput}!`;
-  res.render('hackable/index', { message });
-});
+  return fibonacci(n - 1) + fibonacci(n - 2);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+}
 
 module.exports = app;
